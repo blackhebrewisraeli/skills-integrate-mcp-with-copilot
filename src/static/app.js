@@ -3,14 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
-  const loginForm = document.getElementById("login-form");
-  const usernameInput = document.getElementById("username");
-  const passwordInput = document.getElementById("password");
-  const loginContainer = document.getElementById("login-container");
-  const signupContainer = document.getElementById("signup-container");
-  const logoutButton = document.getElementById("logout-button");
-
-  let authToken = localStorage.getItem("teacherToken") || "";
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -127,9 +119,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(
-          email
-        )}&token=${encodeURIComponent(authToken)}`,
+        `/activities/${encodeURIComponent(
+          activity
+        )}/signup?email=${encodeURIComponent(email)}`,
         {
           method: "POST",
         }
@@ -163,79 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    try {
-      const response = await fetch(
-        `/login?username=${encodeURIComponent(
-          username
-        )}&password=${encodeURIComponent(password)}`,
-        {
-          method: "POST",
-        }
-      );
-
-      const result = await response.json();
-      if (response.ok) {
-        authToken = result.token;
-        localStorage.setItem("teacherToken", authToken);
-        loginContainer.classList.add("hidden");
-        signupContainer.classList.remove("hidden");
-        logoutButton.classList.remove("hidden");
-        messageDiv.textContent = `Logged in as ${result.username}`;
-        messageDiv.className = "success";
-      } else {
-        messageDiv.textContent = result.detail || "Invalid login";
-        messageDiv.className = "error";
-      }
-      messageDiv.classList.remove("hidden");
-      setTimeout(() => {
-        messageDiv.classList.add("hidden");
-      }, 5000);
-    } catch (error) {
-      messageDiv.textContent = "Login failed. Please try again.";
-      messageDiv.className = "error";
-      messageDiv.classList.remove("hidden");
-      console.error("Login error:", error);
-    }
-  });
-
-  logoutButton.addEventListener("click", async () => {
-    try {
-      await fetch(`/logout?token=${encodeURIComponent(authToken)}`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.warn("Logout request failed", error);
-    }
-
-    authToken = "";
-    localStorage.removeItem("teacherToken");
-    loginContainer.classList.remove("hidden");
-    signupContainer.classList.add("hidden");
-    logoutButton.classList.add("hidden");
-    messageDiv.textContent = "Logged out.";
-    messageDiv.className = "info";
-    messageDiv.classList.remove("hidden");
-
-    setTimeout(() => {
-      messageDiv.classList.add("hidden");
-    }, 5000);
-  });
-
-  async function initializeUI() {
-    if (authToken) {
-      loginContainer.classList.add("hidden");
-      signupContainer.classList.remove("hidden");
-      logoutButton.classList.remove("hidden");
-    }
-  }
-
   // Initialize app
   fetchActivities();
-  initializeUI();
 });
